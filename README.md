@@ -1,61 +1,73 @@
 # Buha-Beleg-Checker
 
 Dieses Script dient mir zur einfachen Prüfung der Vollständigkeit meiner Buchhaltung.
-Es verarbeitet einen QIF-Kontoauszug, mein Buchungsprotokoll als CSV sowie einen Ordner mit allen Belegen und erstellt hieraus ein Protokoll im MD-Format.
+Es verarbeitet einen Kontoauszug (CSV aus WISO Mein Geld), mein Buchungsprotokoll (CSV aus WISO EÜR&Kasse) sowie einen Ordner mit allen Belegen (PDF-Rechnungen) und erstellt hieraus ein Protokoll im MD-Format.
 
-## Input QIF-Kontoauszug
+## Ausgabe als Markdown
 
-Einlesen aller bereitgestellten Kontoauszüge im QIF-Format.
+#### ToDo: Nicht erfasste Belege
+Bei folgenden Belegen fehlt noch die Belegnummer im Dateinamen
+* [ ] [All-Inkl - 1111.pdf](#)
 
-* `/input/qif/Export_Konto_1_Q1.qif`
-* `/input/qif/Export_Konto_2.qif`
-* `/input/qif/Export_Splitbuchungen.qif`
+#### TODO: Fehlende Belege
+Folgende Fälle haben noch keinen Beleg
+* [ ] [2222](#2222 "Zeige Datensatz #2222") über `-18,69`
+* [ ] [3333](#3333 "Zeige Datensatz #2222") über `-28,29`
 
-## Input CSV-Buchungsprotokoll
+#### ToDo: Unvollständige Buchungen
+Bei folgenden Buchungen ist keine Belegnummer angegeben
+* [ ] `01.01.2020` | `854,53 €` von `Büroeinrichtung` an `Bank`
 
-Einlesen meines Buchungsprotokolls aus BUHL EÜR&Kasse
+#### TODO: Verbuchung ausstehend
+Folgende Fälle sind noch nicht verbucht
+* [ ] [4444](#4444 "Zeige Datensatz #4444") über `-18,69`
 
-* `/input/buchungen/buchungsprotokoll.csv`
+#### #5555
+| Beleg | Information | Bewertung |
+|---|---|---|
+| Datum: | `05.10.2020` | OK gem. `Export_Sparkasse.CSV` |
+| Betrag: | `-18,69` | OK |
+| Überweisung von/an: | `Domainfactory` | OK gem. `Export_Sparkasse.CSV` |
+| Verwendungszweck: | `Rg. 456789 v. 30.09.20` | OK gem. `Export_Sparkasse.CSV` |
+| Beleg: | [#5555_1 - df - 2020-09-30_RE456789.pdf](#) | Bitte Beleg prüfen |
+| Beleg: | [#5555_2 - df - 2020-09-30_RE456789.pdf](#) | Bitte Beleg prüfen |
 
-Format:
+## Installation
 
-`Buchungsnummer;Teilbuchung;Belegdatum;Buchungstext;Konto;Kontobezeichnung;Gegenkonto;Gegenkontobezeichnung;Soll;Haben;Steuerschluessel;Steuersatz;Steuerschluesselbezeichnung;Belegnummer;Buchungsdatum;UStID;Umsatzart`
+* `git clone https://github.com/ADoebeling/Buha-Beleg-Checker.git`
+* Script `example.php` als script.php duplizieren
+* Pfade in `script.php` anpassen
+* Ausführen von `script.php` (Idealerweise via php8-cgi, wobei es via Webserver genauso funktioniert)
 
-Verwendet werden hiervon (bislang) nur die Spalten:
-* Belegdatum
-* Belegnummer
-* Buchungstext
-* Kontobezeichnung
-* Gegenkontobezeichnung
+## Konfiguration
 
-## Input Belege
+```php
+<?php
+// example.php
 
-Einlesen aller abgelegten Belege aus dem Dateisystem
+require_once 'doebeling.buhaBelegChecker.checker.class.php';
 
-* `input/belege/2020/#123 - Anbieter XY - Rechnung 45824.pdf`
-* `input/belege/2020/#124 - Rechnung 45825.pdf`
-* `input/belege/2020/Rechnung blubb.pdf`
+$buha2020   = new \DOEBELING\BuhaBelegChecker\Checker();
+$buha2020   -> parseBelege('../2020/ER - Eingangsrechnungen/')
+            -> parseBelege('../2020/AR - Ausgangsrechnungen/')
+            -> parseKontoauszuege('../2020/KA - Kontoauszug/')
+            -> parseBuchungen('../2020/BP - Buchungsprotokoll/')
+            -> writeMdReport('../2020/README.md');
+            //-> printDebug();
+```
 
-## Export Protokoll
+## Support & Bugs
 
-### #123
+* Bitte via Issue-Tracker
 
-| Beleg | Information | Bewertung    |
-|-------|-------------|-----------|
-| Datum | 01.01.2020  | OK gem. `Kontoauszug XXXX.qif` und `buchungsprotokoll.csv`, bitte mit RE abgleichen |
-| Betrag |1234,56 €   | OK gem. `Kontoauszug XXXX.qif` und `buchungsprotokoll.csv`, bitte mit RE abgleichen |
-| Kontobewegung: | Sparkasse an Amazon UK  | OK gem. `Kontoauszug XXXX.qif` und `buchungsprotokoll.csv`  |
-| Verwendungszweck | sdf98z23jklsf893kjsdf  | OK gem. `Kontoauszug XXXX.qif` |
-| Buchung: | *Bank* an *Hostingaufwendungen* | OK gem. `buchungsprotokoll.csv` |
-| Belege : | `#1234 - df - invoice 1234.pdf`, `#1234 - df - invoice 1234.msg` |  |
+## Lizenz
 
-### #124
+* CC BY SA
 
-| Beleg | Information | Bewertung    |
-|-------|-------------|-----------|
-| Kontobewegung: | **NICHT GEFUNDEN**  | **FEHLER**: Keine Kontobewegung zu `#123` gefunden |
-| Buchung: |  **NICHT GEBUCHT** | **FEHLER**: Keine Buchung zu `#123` gefunden |
-| Belege : | **NICHT ABGELEGT** | **FEHLER** Keine Belege zu `#123` gefunden
+## Kontakt
+
+* Andreas Döbeling
+https://www.Doebeling.de
 
 
 

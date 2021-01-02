@@ -1,3 +1,0 @@
-[submodule "3rd-party/qif-library"]
-	path = 3rd-party/qif-library
-	url = https://github.com/MimoGraphix/qif-library.git
