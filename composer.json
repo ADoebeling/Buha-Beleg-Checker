@@ -1,0 +1,5 @@
+{
+    "require": {
+        "mimographix/qif-library": "^1.0"
+    }
+}

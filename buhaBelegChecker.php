@@ -4,7 +4,6 @@ namespace de\doebeling;
 
 use MimoGraphix\QIF\Parser;
 
-require_once '3rd-party/qif-library/src/Parser.php';
 
 class buhaBelegChecker
 {
