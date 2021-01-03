@@ -439,7 +439,8 @@ class Checker
         }
 
         // Datum / Uhrzeit
-        $md .= 'Stand: '.date("d.m.Y H:i:s")." Uhr\n\n";
+        //$md .= 'Stand: '.date("d.m.Y H:i:s")." Uhr\n\n";
+        $md .= "\n\n";
 
         foreach ($this->b as $bid => &$b)
         {
@@ -485,12 +486,14 @@ class Checker
        $this->generateMd();
        foreach ($this->b as $bid => &$b)
         {
-            $md = "# Eigenbeleg\n";
-            $md .= 'Stand: '.date("d.m.Y H:i:s")." Uhr\n\n";
+            $md = "# Buchungsbeleg\n\n";
+            //$md .= 'Stand: '.date("d.m.Y H:i:s")." Uhr\n\n";
+
+            $md .= "* [ ] Buchungsbeleg zur internen Dokumentation\n* [ ] Vorläufiger Eigenbeleg, Rechnung wurde angefragt, liegt noch nicht vor\n* [ ] Eigenbeleg, da: <br>\n<br>\n<br>\n\n ` ________________________________________________________________________ ` \n<br>\n\n";
 
             $md .= $b['md'];
 
-            $md .=  "\n<br>\n<br>\n<br>\n<br>\n\n`_________________________________________________________________________`\n<br>\nDatum, Stempel, Unterschrift";
+            $md .=  "\n<br>\n<br>\n<br>\n<br>\n\n ` ________________________________________________________________________ ` \n<br>\nDatum, Stempel, Unterschrift";
 
             $filename = "#$bid - Eigenbeleg.md";
             $filepath = "$dirMdReportPath/$filename";
