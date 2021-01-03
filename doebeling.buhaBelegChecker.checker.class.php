@@ -100,13 +100,15 @@ class Checker
      */
     public function parseKontoauszuege($dirKontoauszuege)
     {
-        $this->isParseBuchungenActive = true;
+        $this->isParseKontoauszuegeActive = true;
         $files = self::getDirRecursivelyAsArray($dirKontoauszuege, '/.*\.csv/i');
         foreach ($files as $filepath => $filename) {
             $kas = self::getCsvAsArray($filepath, ';');
             foreach ($kas as $k) {
                 if (empty($k['BuchungID'])) Continue;
-                $k['file'] = $filename;
+                $k['file'] = $filename; // Deprecated
+                $k['filename'] = $filename;
+                $k['filepath'] = "$dirKontoauszuege/$filename";
                 $k['Empfänger/Auftraggebe'] = empty($k['Empfänger/Auftraggebe'])  ? 'Unbekannt' : $k['Empfänger/Auftraggebe'];
                 $this->b[$k['BuchungID']]['Kontoauszug'] = $k;
 
@@ -184,13 +186,15 @@ class Checker
                 }
                 else
                 {
-                    $b['id'] = '00_Datensätze ohne Belegnummer';
+                    $b['id'] = '00_Buchungen_ohne_Belegnummer';
                 }
 
                 $b['Betrag'] = self::getFloat($b['Soll']) != 0 ? $b['Soll'] : $b['Haben'];
 
-                $b['filename'] = $filepath;
+                //$b['filename'] = $filepath;
                 $b['file'] = $file;
+                $b['filename'] = $file;
+                $b['filepath'] = $filepath;
                 $this->b[$b['id']]['buchungen'][] = $b;
                 //$this->b[$b['id']]['Betrag'] = &$b['Betrag'];
             }
@@ -285,39 +289,65 @@ class Checker
        foreach ($this->b as $bid => &$b)
         {
                 $b['md'] = '';
-                
-                $b['md'] .= "### #$bid\n";
-                $b['md'] .= "| Beleg | Information | Quelle |\n|---|---|---|\n";
 
                 // Datum
                 if (isset($b['Kontoauszug']['Wertstellung'])) {
-                    $b['md'] .= "| Datum: | `{$b['Kontoauszug']['Wertstellung']}` | `{$b['Kontoauszug']['file']}` |\n";
+                    $datum = $b['Kontoauszug']['Wertstellung'];
                 } else if (isset($b['buchungen'][0]['Belegdatum'])) {
-                    $b['md'] .= "| Datum: | `{$b['buchungen'][0]['Belegdatum']}` | `{$b['buchungen'][0]['file']}` |\n";
-                } else if (isset($b['buchungen'][0]['Belegdatum'])) {
-                    $b['md'] .= "| Datum: | Unbekannt | Bitte Belege prüfen` |\n";
+                    $datum = $b['buchungen'][0]['Belegdatum'];
+                } else {
+                    $datum = "";
                 }
+
+                if (isset($b['Kontoauszug']['Betrag'])) {
+                    $betrag = $b['Kontoauszug']['Betrag'] . ' €';
+                }
+                else if (isset($b['buchungen']))
+                {
+                    $betrag = 0;
+                    foreach ($b['buchungen'] as $bs)
+                    {
+                        $betrag += self::getFloat($bs['Soll']);
+                        $betrag += self::getFloat($bs['Haben']);
+                    }
+                    setlocale(LC_MONETARY, 'de_DE');
+                    $betrag = number_format($betrag, 2, ',', '.'). ' €';
+                }
+
+                $b['md'] .= "## #$bid\n";
+                $b['md'] .= "| #$bid | $datum | $betrag |\n|---|---|---|\n";
+
+                // Datum
+                /*
+                if (isset($b['Kontoauszug']['Wertstellung'])) {
+                    $b['md'] .= "| Datum: | `{$b['Kontoauszug']['Wertstellung']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
+                } else if (isset($b['buchungen'][0]['Belegdatum'])) {
+                    $b['md'] .= "| Datum: | `{$b['buchungen'][0]['Belegdatum']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
+                } else if (isset($b['buchungen'][0]['Belegdatum'])) {
+                    $b['md'] .= "| Datum: | Unbekannt | ` |\n";
+                }
+                */
 
                 // Überweisung
                 if (!empty($b['Kontoauszug']))
                 {
-                    $b['Kontoauszug']['Kontoname'] = empty($b['Kontoauszug']['Kontoname']) ? 'Unbekanntes Konto' : $b['Kontoauszug']['Kontoname'];
+                    $b['Kontoauszug']['Kontoname'] = empty($b['Kontoauszug']['Kontoname']) ? 'Bank' : $b['Kontoauszug']['Kontoname'];
                     if (!isset($b['Kontoauszug']['Betrag']))
                     {
-                        $b['md'] .= "| Überweisung: | **Fehler** Datensatz unvollständig / Betrag fehlt | `{$b['Kontoauszug']['file']}` |\n";
+                        $b['md'] .= "| Kontobewegung: | **Fehler** Datensatz unvollständig / Betrag fehlt | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
                     }
                     elseif (self::getFloat($b['Kontoauszug']['Betrag']) < 0)
                     {
-                        $b['md'] .= "| Überweisung: | `{$b['Kontoauszug']['Kontoname']}` *an*<br>`{$b['Kontoauszug']['Empfänger/Auftraggebe']}` *mit*<br>`{$b['Kontoauszug']['Betrag']} €` | `{$b['Kontoauszug']['file']}` |\n";
+                        $b['md'] .= "| Kontobewegung: | `{$b['Kontoauszug']['Kontoname']}` *an*<br>`{$b['Kontoauszug']['Empfänger/Auftraggebe']}` *mit*<br>`{$b['Kontoauszug']['Betrag']} €` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
                     }
                     else
                     {
-                        $b['md'] .= "| Überweisung: |`{$b['Kontoauszug']['Empfänger/Auftraggebe']}` *an*<br>`{$b['Kontoauszug']['Kontoname']}` *mit*<br>`{$b['Kontoauszug']['Betrag']} €``| `{$b['Kontoauszug']['file']}` |\n";
+                        $b['md'] .= "| Kontobewegung: |`{$b['Kontoauszug']['Empfänger/Auftraggebe']}` *an*<br>`{$b['Kontoauszug']['Kontoname']}` *mit*<br>`{$b['Kontoauszug']['Betrag']} €`| {". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
                     }
                 }
                 else
                 {
-                    $b['md'] .= "| Überweisung: | **FEHLT** | **HINWEIS**: Keine Überweisung gefunden |\n";
+                    $b['md'] .= "| Kontobewegung: | **FEHLT** | **HINWEIS**: Keine Überweisung gefunden |\n";
                 }
 
                 // Buchungssatz
@@ -326,9 +356,9 @@ class Checker
                     foreach ($b['buchungen'] as $bs)
                     {
                         if (self::getFloat($bs['Soll']) > self::getFloat(self::getFloat($bs['Haben']))) {
-                            $b['md'] .= "| Buchungssatz: | `{$bs['Konto']} {$bs['Kontobezeichnung']}` *an*<br>`{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | `{$bs['file']}` |\n";
+                            $b['md'] .= "| Buchungssatz: | `{$bs['Konto']} {$bs['Kontobezeichnung']}` *an*<br>`{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
                         } else {
-                            $b['md'] .= "| Buchungssatz: | `{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *an*<br>`{$bs['Konto']} {$bs['Kontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | `{$bs['file']}` |\n";
+                            $b['md'] .= "| Buchungssatz: | `{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *an*<br>`{$bs['Konto']} {$bs['Kontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
                         }
                     }
                 }
@@ -338,10 +368,10 @@ class Checker
                 }
 
                 // Verwendungszweck
-                $b['md'] .= isset($b['Kontoauszug']['Verwendungszweck']) ? "| Verwendungszweck: | `{$b['Kontoauszug']['Verwendungszweck']}` | `{$b['Kontoauszug']['file']}` |\n" : "";
+                $b['md'] .= isset($b['Kontoauszug']['Verwendungszweck']) ? "| Verwendungszweck: | `{$b['Kontoauszug']['Verwendungszweck']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n" : "";
 
                 // Notiz
-                $b['md'] .= !empty($b['Kontoauszug']['Notiz']) ? "| Vermerk: | `{$b['Kontoauszug']['Notiz']}` | `{$b['Kontoauszug']['file']}` |\n" : "";
+                $b['md'] .= !empty($b['Kontoauszug']['Notiz']) ? "| Vermerk: | `{$b['Kontoauszug']['Notiz']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n" : "";
 
                 // Belege
                 if ($this->isParseBelegeActive)
@@ -353,11 +383,21 @@ class Checker
                         {
                             $belege .= self::getMdLink($filename, "$filepath") . "<br>";
                         }
-                        $b['md'] .= "| Belege: | $belege | Bitte Beleg prüfen |\n";
+                        $b['md'] .= "| Rechnungen: | Sind abgelegt | $belege |\n";
                     }
                     else {
                         $b['md'] .= "| Belege: | **Fehlen** | **FEHLER:** Keine Belege gefunden |\n";
                     }
+                }
+                // Belege
+                if (isset($b['eigenbeleg']))
+                {
+                        $belege = '';
+                        foreach ($b['eigenbeleg'] as $filepath => $filename)
+                        {
+                            $belege .= self::getMdLink($filename, "$filepath") . "<br>";
+                        }
+                        $b['md'] .= "| Eigenbeleg: | Vorlage wurde erstellt | $belege |\n";
                 }
                 $b['md'] .= "\n\n";
         }
@@ -370,7 +410,7 @@ class Checker
      * @param $fileMdReport
      * @return $this
      */
-    public function writeMdReport($fileMdReport, $filter = '', $bid = '')
+    public function writeMdReport($fileMdReport, $filter = '')
     {
         $this->generateMd();
         $md = '';
@@ -383,23 +423,18 @@ class Checker
                 $md .= "Zu allen nachfolgenden Datensätzen müssen noch die Belege erfasst werden\n\n";
                 break;
 
-            case 'fehlendeBelegnummern':
-                $md .= "## Liste aller Datensätze mit fehlender Belegnummer\n";
-                $md .= "Alle nachfolgenden Belege müssen noch mit einer Belegnummer versehen werden\n\n";
+            case 'buchungen':
+                $md .= "## Liste aller Datensätze mit ausstehender Buchung\n";
+                $md .= "Zu allen nachfolgenden Datensätzen müssen noch die Buchungen korrekt erfasst werden\n\n";
                 break;
 
-                case 'fehlendeBelege':
-                $md .= "## Liste aller Datensätze mit fehlenden Belegen\n";
-                $md .= "Zu allen nachfolgenden Datensätzen müssen noch die Belege erfasst werden\n\n";
-                break;
-
-            case 'fehlendeBuchungen\n':
-                $md .= "## Liste aller Datensätze mit fehlenden Buchungen\n";
+            case 'kontobewegung':
+                $md .= "## Liste aller Datensätze mit fehlender Kontobewegung\n";
+                $md .= "Zu allen nachfolgenden Datensätzen muss geprüft werden, ob es hierzu eine Kontobewegung geben sollte \n\n";
                 break;
 
             default:
-                $md .= '## Liste aller gefundenen Datensätze';
-                $md .= 'Stand: '.date("d.m.Y H:i:s").' Uhr';
+                $md .= "## Liste aller gefundenen Datensätze\n";
                 break;
         }
 
@@ -412,8 +447,18 @@ class Checker
             {
                 Continue;
             }
-
-            $md .= $b['md'];
+            else if ($filter == 'buchungen' && $this->isParseBuchungenActive && isset($b['buchungen']) && $bid != '00_Buchungen_ohne_Belegnummer')
+            {
+                Continue;
+            }
+            else if ($filter == 'kontobewegung' && $this->isParseKontoauszuegeActive && isset($b['Kontoauszug']))
+            {
+                Continue;
+            }
+            else
+            {
+                $md .= $b['md'];
+            }
         }
 
         file_put_contents($fileMdReport, $md);
@@ -425,14 +470,34 @@ class Checker
         return $this->writeMdReport($fileMdReport, 'belegerfassung');
     }
 
-    public function writeMdReportFehlendeBuchungen($fileMdReport)
+    public function writeMdReportBuchungen($fileMdReport)
     {
-        return $this->writeMdReport($fileMdReport, 'fehlendeBuchungen');
+        return $this->writeMdReport($fileMdReport, 'buchungen');
     }
 
-    public function writeMdReportFehlerhafteBuchungenOhneBelegnummer($fileMdReport)
+    public function writeMdReportKontobewegung($fileMdReport)
     {
-        return $this->writeMdReport($fileMdReport, 'fehlerhafteBuchungenOhneBelegnummer');
+        return $this->writeMdReport($fileMdReport, 'kontobewegung');
+    }
+
+    public function writeMdReportEigenbeleg($dirMdReportPath)
+    {
+       $this->generateMd();
+       foreach ($this->b as $bid => &$b)
+        {
+            $md = "# Eigenbeleg\n";
+            $md .= 'Stand: '.date("d.m.Y H:i:s")." Uhr\n\n";
+
+            $md .= $b['md'];
+
+            $md .=  "\n<br>\n<br>\n<br>\n<br>\n\n`_________________________________________________________________________`\n<br>\nDatum, Stempel, Unterschrift";
+
+            $filename = "#$bid - Eigenbeleg.md";
+            $filepath = "$dirMdReportPath/$filename";
+            file_put_contents($filepath, $md);
+            $b['eigenbeleg'][$filepath] = $filename;
+        }
+        return $this;
     }
 
     // --------------------------------------------------
@@ -530,6 +595,6 @@ class Checker
         {
             $link = str_replace('%23', '#', (str_replace('%2F', '/', rawurlencode(stripslashes(trim($link))))));
         }
-        return "[$text]($link \"$alt\")";
+        return "[`$text`]($link \"$alt\")";
     }
 }
