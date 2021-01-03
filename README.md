@@ -1,36 +1,17 @@
 # Buha-Beleg-Checker
 
 Dieses Script dient mir zur einfachen Prüfung der Vollständigkeit meiner Buchhaltung.
-Es verarbeitet einen Kontoauszug (CSV aus WISO Mein Geld), mein Buchungsprotokoll (CSV aus WISO EÜR&Kasse) sowie einen Ordner mit allen Belegen (PDF-Rechnungen) und erstellt hieraus ein Protokoll im MD-Format.
+Es verarbeitet einen Kontoauszug (CSV aus WISO Mein Geld), mein Buchungsprotokoll (CSV aus WISO EÜR&Kasse) sowie einen Ordner mit allen Belegen (PDF-Rechnungen) und erstellt hieraus Protokolle im MD-Format.
 
-## Ausgabe als Markdown
+## Scriptausgabe (Markdown)
 
-#### ToDo: Nicht erfasste Belege
-Bei folgenden Belegen fehlt noch die Belegnummer im Dateinamen
-* [ ] [All-Inkl - 1111.pdf](#)
-
-#### TODO: Fehlende Belege
-Folgende Fälle haben noch keinen Beleg
-* [ ] [2222](#2222 "Zeige Datensatz #2222") über `-18,69`
-* [ ] [3333](#3333 "Zeige Datensatz #2222") über `-28,29`
-
-#### ToDo: Unvollständige Buchungen
-Bei folgenden Buchungen ist keine Belegnummer angegeben
-* [ ] `01.01.2020` | `854,53 €` von `Büroeinrichtung` an `Bank`
-
-#### TODO: Verbuchung ausstehend
-Folgende Fälle sind noch nicht verbucht
-* [ ] [4444](#4444 "Zeige Datensatz #4444") über `-18,69`
-
-#### #5555
-| Beleg | Information | Bewertung |
+| #5555 | 28.01.2020 | -5,00 € |
 |---|---|---|
-| Datum: | `05.10.2020` | OK gem. `Export_Sparkasse.CSV` |
-| Betrag: | `-18,69` | OK |
-| Überweisung von/an: | `Domainfactory` | OK gem. `Export_Sparkasse.CSV` |
-| Verwendungszweck: | `Rg. 456789 v. 30.09.20` | OK gem. `Export_Sparkasse.CSV` |
-| Beleg: | [#5555_1 - df - 2020-09-30_RE456789.pdf](#) | Bitte Beleg prüfen |
-| Beleg: | [#5555_2 - df - 2020-09-30_RE456789.pdf](#) | Bitte Beleg prüfen |
+| Kontobewegung: | `Sparkasse Sonstwo` *an*<br>`STRATO AG` *mit*<br>`-5,00 €` | [`Kontoauszug.CSV`](#) |
+| Buchungssatz: | `4000 Hosting-Aufwendungen` *an*<br>`1200 Bank` *mit* <br>`5,00 €`  | [`Buchungsexport.csv`](#) |
+| Verwendungszweck: | `RE 123456 v. 15.01.2020` | [`Kontoauszug.CSV`](#) |
+| Rechnungen: | Sind abgelegt | [`#5555 - Strato - RE123456.pdf`](#) |
+| Eigenbeleg: | Vorlage wurde erstellt | [`#5555 - Eigenbeleg.md`](#)<br> |
 
 ## Installation
 
@@ -52,8 +33,16 @@ $buha2020   -> parseBelege('../2020/ER - Eingangsrechnungen/')
             -> parseBelege('../2020/AR - Ausgangsrechnungen/')
             -> parseKontoauszuege('../2020/KA - Kontoauszug/')
             -> parseBuchungen('../2020/BP - Buchungsprotokoll/')
-            -> writeMdReport('../2020/README.md');
+
+            -> writeMdReportEigenbeleg('../2020/EB - Eigenbelege/')
+
+            -> writeMdReport('../2020/README.md')
+            -> writeMdReportBelegerfassung('../2020/Belegerfassung.md')
+            -> writeMdReportBuchungen('../2020/Buchungen.md')
+            -> writeMdReportKontobewegung('../2020/Kontobewegung.md');
+
             //-> printDebug();
+
 ```
 
 ## Support & Bugs
@@ -66,7 +55,7 @@ $buha2020   -> parseBelege('../2020/ER - Eingangsrechnungen/')
 
 ## Kontakt
 
-* Andreas Döbeling
+* Andreas Döbeling  
 https://www.Doebeling.de
 
 

@@ -16,8 +16,13 @@ $buha2020   -> parseBelege('../2020/ER - Eingangsrechnungen/')
             -> parseBelege('../2020/AR - Ausgangsrechnungen/')
             -> parseKontoauszuege('../2020/KA - Kontoauszug/')
             -> parseBuchungen('../2020/BP - Buchungsprotokoll/')
-            -> writeMdReport('../2020/README.md');
+
+            -> writeMdReportEigenbeleg('../2020/EB - Eigenbelege/')
+
+            -> writeMdReport('../2020/README.md')
+            -> writeMdReportBelegerfassung('../2020/Belegerfassung.md')
+            -> writeMdReportBuchungen('../2020/Buchungen.md')
+            -> writeMdReportKontobewegung('../2020/Kontobewegung.md');
+
             //-> printDebug();
-
-
 
