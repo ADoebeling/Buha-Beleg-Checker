@@ -344,6 +344,7 @@ class Checker
                     {
                         $b['md'] .= "| Kontobewegung: |`{$b['Kontoauszug']['Empfänger/Auftraggebe']}` *an*<br>`{$b['Kontoauszug']['Kontoname']}` *mit*<br>`{$b['Kontoauszug']['Betrag']} €`| {". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
                     }
+
                 }
                 else
                 {
@@ -359,6 +360,12 @@ class Checker
                             $b['md'] .= "| Buchungssatz: | `{$bs['Konto']} {$bs['Kontobezeichnung']}` *an*<br>`{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
                         } else {
                             $b['md'] .= "| Buchungssatz: | `{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *an*<br>`{$bs['Konto']} {$bs['Kontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
+                        }
+
+                        // Buchungstext
+                        if (!isset($b['Kontoauszug']['Verwendungszweck']))
+                        {
+                            $b['md'] .= "| Buchungstext: | `{$bs['Buchungstext']}` | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
                         }
                     }
                 }
