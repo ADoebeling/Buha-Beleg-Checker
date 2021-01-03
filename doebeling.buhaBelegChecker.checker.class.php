@@ -299,12 +299,12 @@ class Checker
                     $datum = "";
                 }
 
+                $betrag = 0;
                 if (isset($b['Kontoauszug']['Betrag'])) {
                     $betrag = $b['Kontoauszug']['Betrag'] . ' €';
                 }
                 else if (isset($b['buchungen']))
                 {
-                    $betrag = 0;
                     foreach ($b['buchungen'] as $bs)
                     {
                         $betrag += self::getFloat($bs['Soll']);
