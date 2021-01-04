@@ -319,11 +319,11 @@ class Checker
                             $b['md'] .= "| Buchungssatz: | `{$bs['Gegenkonto']} {$bs['Gegenkontobezeichnung']}` *an*<br>`{$bs['Konto']} {$bs['Kontobezeichnung']}` *mit* <br>`{$bs['Betrag']} €`  | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
                         }
 
-                        // Buchungstext
-                        if (!isset($b['Kontoauszug']['Verwendungszweck']))
-                        {
+                        // Buchungstext ausgeben, wenn dieser nicht den Verwendungszweck beinhaltet
+                        //if (!isset($b['buchung']['Verwendungszweck']) || strstr($bs['Buchungstext'], $b['buchung']['Verwendungszweck']) === false)
+                        //{
                             $b['md'] .= "| Buchungstext: | `{$bs['Buchungstext']}` | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
-                        }
+                        //}
                     }
                 }
                 else
