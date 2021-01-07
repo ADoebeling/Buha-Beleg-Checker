@@ -7,7 +7,7 @@ setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
 if (!function_exists('array_key_first'))
 {
     function array_key_first ($array) {
-        foreach ($array as $a) return $a;
+        foreach ($array as $k => &$v) return $k;
     }
 }
 
