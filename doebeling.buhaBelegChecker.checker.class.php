@@ -29,37 +29,37 @@ class Checker
     /**
      * @var array Array aller Belege
      */
-    protected array $b = array();
+    protected $b = array();
 
     /**
      * @var string
      */
-    protected string $md = '';
+    protected $md = '';
 
     /**
      * @var float
      */
-    protected float $timer = 0.0;
+    protected $timer = 0.0;
 
     /**
      * @var bool
      */
-    protected bool $isParseBelegeActive = false;
+    protected $isParseBelegeActive = false;
 
     /**
      * @var bool
      */
-    protected bool $isParseBuchungenActive = false;
+    protected $isParseBuchungenActive = false;
 
     /**
      * @var bool
      */
-    protected bool $isParseKontoauszuegeActive = false;
+    protected $isParseKontoauszuegeActive = false;
 
     /**
      * @var bool
      */
-    protected bool $isEigenbelegActive = false;
+    protected $isEigenbelegActive = false;
 
     // --------------------------------------------------
     // Public API
@@ -302,6 +302,9 @@ class Checker
                         $b['md'] .= "| Kontobewegung: |`{$b['Kontoauszug']['Empfänger/Auftraggeber']}` *an*<br>`{$b['Kontoauszug']['Kontoname']}` *mit*<br>`{$b['Kontoauszug']['Betrag']} €`| {". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n";
                     }
 
+                    // Verwendungszweck
+                    $b['md'] .= isset($b['Kontoauszug']['Verwendungszweck']) ? "| Verwendungszweck: | `{$b['Kontoauszug']['Verwendungszweck']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n" : "";
+
                 }
                 else
                 {
@@ -322,7 +325,8 @@ class Checker
                         // Buchungstext ausgeben, wenn dieser nicht den Verwendungszweck beinhaltet
                         //if (!isset($b['buchung']['Verwendungszweck']) || strstr($bs['Buchungstext'], $b['buchung']['Verwendungszweck']) === false)
                         //{
-                            $b['md'] .= "| Buchungstext: | `{$bs['Buchungstext']}` | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
+                        $bt = str_replace('|', '/', $bs['Buchungstext']);
+                        $b['md'] .= "| Buchungstext: | `$bt` | ". static::getMdLink($bs['filename'], $bs['filepath']) ." |\n";
                         //}
                     }
                 }
@@ -330,9 +334,6 @@ class Checker
                 {
                     $b['md'] .= "| Buchungssatz: | **FEHLT**  | **FEHLER**:<br>Keine Buchungssätze gefunden |\n";
                 }
-
-                // Verwendungszweck
-                $b['md'] .= isset($b['Kontoauszug']['Verwendungszweck']) ? "| Verwendungszweck: | `{$b['Kontoauszug']['Verwendungszweck']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n" : "";
 
                 // Notiz
                 $b['md'] .= !empty($b['Kontoauszug']['Notiz']) ? "| Vermerk: | `{$b['Kontoauszug']['Notiz']}` | ". static::getMdLink($b['Kontoauszug']['filename'], $b['Kontoauszug']['filepath']) ." |\n" : "";
