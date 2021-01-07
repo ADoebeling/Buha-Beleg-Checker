@@ -426,7 +426,7 @@ class Checker
 
         foreach ($this->b as $bid => &$b)
         {
-            if ($filter == 'belegerfassung' && $this->isParseBelegeActive && isset($b['belege']) && !isset($b['hinweis']['BelegOhneBelegnummer']))
+            if ($filter == 'belegerfassung' && $this->isParseBelegeActive && isset($b['belege'])) //Das macht es nicht einfacher && !isset($b['hinweis']['BelegOhneBelegnummer'])
             {
                 Continue;
             }
