@@ -4,7 +4,7 @@ namespace DOEBELING\BuhaBelegChecker;
 setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
 
 //PHP7.2
-if (!function_exists(array_key_first))
+if (!function_exists('array_key_first'))
 {
     function array_key_first ($array) {
         foreach ($array as $a) return $a;
