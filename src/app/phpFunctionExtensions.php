@@ -52,3 +52,15 @@ function imap_utf8_recursive($mime_encoded_contents)
 {
     return getMimeAsUtf8($mime_encoded_contents);
 }
+
+
+
+function getStringAsFilename($string)
+{
+    setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
+    $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string); // Umlaute
+    $string = str_replace(' ', '-', $string); // Spaces
+    $string = mb_ereg_replace("([^\w\-\._])", '', $string); // Specialchars
+    $string = mb_ereg_replace("([\.]{2,})", '', $string);
+    return $string;
+}

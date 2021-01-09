@@ -20,37 +20,55 @@ class belegMails
     /**
      * @var resource Mailbox IMAP-Stream
      */
-    protected $mb;
+    protected $mailbox;
 
     /**
-     * @var array Belegmail-Array
+     * @var object Belegmail-Array
      */
-    protected $bm = [];
+    protected $belegMail;
 
     public function __construct(string $sslHostname, int $sslPort, string $user, string $pwd)
     {
-        $mailbox = "{{$sslHostname}:{$sslPort}/imap/ssl}INBOX";
-        $this->mb = imap_open($mailbox, $user, $pwd);
-        for ($i = imap_num_msg($this->mb); $i > 0; $i--)
+        $this->setMailbox($sslHostname, $sslPort, $user, $pwd);
+        $this->setBelegMail();
+    }
+
+    protected function setMailbox(string $sslHostname, int $sslPort, string $user, string $pwd)
+    {
+        $server = "{{$sslHostname}:{$sslPort}/imap/ssl}INBOX";
+        $this->mailbox = imap_open($server, $user, $pwd);
+        return $this;
+    }
+
+    protected function setBelegMail()
+    {
+        $this->belegMail = (object) array();
+
+        for ($i = imap_num_msg($this->mailbox); $i > 0; $i--)
         {
-            $bm = new Belegmail($this->mb, $i);
-            $this->bm[$bm->getUid()] = $bm;
+            $bm = new belegMail($this->mailbox, $i);
+            $this->belegMail->{$bm->getUid()} = $bm;
         }
         return $this;
     }
 
-    public function get($id): Belegmail
+    public function getByUid($uid): belegMail
     {
-        return $this->bm[$id];
+        return $this->belegMail->$uid;
     }
 
-    public function getAll(): array
+    public function getAll(): \stdClass
     {
-        return $this->bm;
+        return $this->belegMail;
+    }
+
+    public function hasMails() : bool
+    {
+        return (count(get_object_vars($this->getAll())) > 0);
     }
 
     public function __destruct()
     {
-        imap_close($this->mb);
+        imap_close($this->mailbox);
     }
 }
