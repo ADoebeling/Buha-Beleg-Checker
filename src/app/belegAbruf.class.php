@@ -40,7 +40,8 @@ class belegAbruf
 
             // Dir
             $dir = sprintf($dir, $m->getDateAsY());
-            if (!file_exists($dir)) mkdir($dir, 0770, true);
+            if (!file_exists($dir))
+                mkdir($dir, 0770, true);
 
             // Filename
             $fileName = [];
@@ -65,7 +66,8 @@ class belegAbruf
             {
                 // Dir
                 $dir = sprintf($dir, $m->getDateAsY());
-                if (!file_exists($dir)) mkdir($dir, 0770, true);
+                if (!file_exists($dir))
+                    mkdir($dir, 0770, true);
 
                 foreach ($m->getAttachments($subtype) as $attachmentName => $attachementBody)
                 {
@@ -99,7 +101,7 @@ class belegAbruf
         return $this->downloadMailParts($dir, 'PLAIN');
     }
 
-    public function hasMails() : bool
+    public function hasMails(): bool
     {
         return $this->belegMails->hasMails();
     }

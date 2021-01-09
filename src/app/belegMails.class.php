@@ -62,7 +62,7 @@ class belegMails
         return $this->belegMail;
     }
 
-    public function hasMails() : bool
+    public function hasMails(): bool
     {
         return (count(get_object_vars($this->getAll())) > 0);
     }

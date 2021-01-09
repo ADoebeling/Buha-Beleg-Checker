@@ -39,31 +39,36 @@ class belegMail
 
     public function getUid(): int
     {
-        if (empty($this->uid)) $this->uid = imap_uid($this->mailbox, $this->messageNmb);
+        if (empty($this->uid))
+            $this->uid = imap_uid($this->mailbox, $this->messageNmb);
         return getMimeAsUtf8($this->uid);
     }
 
     public function getHeader(): object
     {
-        if (empty($this->header)) $this->header = imap_headerinfo($this->mailbox, $this->messageNmb);
+        if (empty($this->header))
+            $this->header = imap_headerinfo($this->mailbox, $this->messageNmb);
         return getMimeAsUtf8($this->header);
     }
 
     public function getHeaderText($returnAsUtf8 = true): string
     {
-        if (empty($this->headerText)) $this->headerText = imap_fetchheader($this->mailbox, $this->messageNmb, FT_PREFETCHTEXT);
+        if (empty($this->headerText))
+            $this->headerText = imap_fetchheader($this->mailbox, $this->messageNmb, FT_PREFETCHTEXT);
         return $returnAsUtf8 ? getMimeAsUtf8($this->headerText) : $this->headerText;
     }
 
     public function getBody($returnAsUtf8 = true): string
     {
-        if (empty($this->body)) $this->body = imap_body($this->mailbox, $this->messageNmb);
+        if (empty($this->body))
+            $this->body = imap_body($this->mailbox, $this->messageNmb);
         return getMimeAsUtf8($this->body);
     }
 
     public function getStructure(): object
     {
-        if (empty($this->structure)) $this->structure = imap_fetchstructure($this->mailbox, $this->messageNmb);
+        if (empty($this->structure))
+            $this->structure = imap_fetchstructure($this->mailbox, $this->messageNmb);
         return $this->structure;
     }
 
@@ -76,7 +81,7 @@ class belegMail
     {
         if (empty($this->attachments))
         {
-            $this->attachments = (object)array();
+            $this->attachments = (object) array();
             if (!empty($this->getStructure()->parts))
             {
                 foreach ($this->getStructure()->parts as $section => $part)
@@ -126,7 +131,7 @@ class belegMail
 
     public function moveMailsTo($dir)
     {
-        imap_mail_move ( $this->mailbox , strval($this->uid) , "INBOX.$dir" , CP_UID);
+        imap_mail_move($this->mailbox, strval($this->uid), "INBOX.$dir", CP_UID);
         imap_expunge($this->mailbox);
     }
 }
