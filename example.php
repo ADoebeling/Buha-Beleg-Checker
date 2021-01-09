@@ -1,6 +1,6 @@
 <?php
 /**
- * Example BuhaBelegChecker
+ * Script
  * @package DOEBELING\BuhaBelegChecker
  *
  * @author      Andreas Döbeling
@@ -9,20 +9,25 @@
  * @license     CC-BY-SA <https://creativecommons.org/licenses/by-sa/3.0/de/>
  */
 
-require_once 'src/app/buchungsChecker.php';
+require_once './src/app/belegAbruf.class.php';
+require_once './src/app/buchungsChecker.php';
+require_once './vendor/autoload.php';
 
-$buha2020   = new \DOEBELING\buhaJournal\buchungsChecker();
-$buha2020   -> parseBelege('../2020/ER - Eingangsrechnungen/')
-            -> parseBelege('../2020/AR - Ausgangsrechnungen/')
-            -> parseKontoauszuege('../2020/KA - Kontoauszug/')
-            -> parseBuchungen('../2020/BP - Buchungsprotokoll/')
+// Execute Script
+if (file_exists('../script.php'))
+{
+    require '../script.php';
+}
 
-            -> writeMdReportEigenbeleg('../2020/EB - Eigenbelege/')
+// Example code
+die();
 
-            -> writeMdReport('../2020/README.md')
-            -> writeMdReportBelegerfassung('../2020/Belegerfassung.md')
-            -> writeMdReportBuchungen('../2020/Buchungen.md')
-            -> writeMdReportKontobewegung('../2020/Kontobewegung.md');
+// Optionaler Passwortschutz
+if (!isset($_REQUEST['pwd']) || $_REQUEST['pwd'] != 'ein-passwort')
+{
+    header('HTTP/1.0 403 Forbidden');
+    die('You are not allowed to access this file.');
+}
 
-            //-> printDebug();
+// TODO
 
