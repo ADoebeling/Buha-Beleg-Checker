@@ -5,10 +5,6 @@ declare(strict_types=1);
 namespace DOEBELING\buhaJournal;
 require_once 'phpFunctionExtensions.php';
 
-use DOEBELING\phpFunctionExtensions;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-
 error_reporting(E_ALL);
 
 /**
@@ -25,26 +21,23 @@ error_reporting(E_ALL);
 class belegMail
 {
     protected $mailbox;
-    protected $messageNmb;
+    protected $msgNumber;
     protected $uid;
     protected $header = array();
     protected $headerText = '';
     protected $body = '';
     protected $parts;
-    protected $structure = '';
-    protected $attachments;
-
     protected $downloadFiles; // [$url] = $filename
 
     /**
-     * @var Logger
+     * @var log
      */
     public $log;
 
-    public function __construct(&$mb, int &$msgno, array $log)
+    public function __construct(&$mb, int $msgNumber, array $log)
     {
         $this->mailbox = &$mb;
-        $this->messageNmb = $msgno;
+        $this->msgNumber = $msgNumber;
         $this->setLog($log);
     }
 
@@ -62,7 +55,7 @@ class belegMail
     {
         if (empty($this->uid))
         {
-            $this->uid = imap_uid($this->mailbox, $this->messageNmb);
+            $this->uid = imap_uid($this->mailbox, $this->msgNumber);
         }
         return getMimeAsUtf8($this->uid);
     }
@@ -71,7 +64,7 @@ class belegMail
     {
         if (empty($this->header))
         {
-            $this->header = imap_headerinfo($this->mailbox, $this->messageNmb);
+            $this->header = imap_headerinfo($this->mailbox, $this->msgNumber);
             $this->log->debug(__METHOD__, [$this->getHeader()]);
         }
         return getMimeAsUtf8($this->header);
@@ -81,7 +74,7 @@ class belegMail
     {
         if (empty($this->headerText))
         {
-            $this->headerText = imap_fetchheader($this->mailbox, $this->messageNmb, FT_PREFETCHTEXT);
+            $this->headerText = imap_fetchheader($this->mailbox, $this->msgNumber, FT_PREFETCHTEXT);
             $this->log->debug(__METHOD__, $this->getHeaderText());
         }
         return $returnAsUtf8 ? getMimeAsUtf8($this->headerText) : $this->headerText;
@@ -91,10 +84,10 @@ class belegMail
     {
         if (empty($this->body))
         {
-            $this->body = imap_body($this->mailbox, $this->messageNmb);
+            $this->body = imap_body($this->mailbox, $this->msgNumber);
             $this->log->debug(__METHOD__, $this->getBody());
         }
-        return getMimeAsUtf8($this->body);
+        return $returnAsUtf8 ? getMimeAsUtf8($this->body) : $this->body;
     }
 
 
@@ -102,11 +95,11 @@ class belegMail
     {
         if (empty($this->parts))
         {
-            $this->parts = (object) imap_fetchstructure($this->mailbox, $this->messageNmb)->parts;
-            foreach ($this->parts as $sectionId => &$part)
+            $this->parts = (object) imap_fetchstructure($this->mailbox, $this->msgNumber)->parts;
+            foreach ($this->parts as $sectionId => $part)
             {
-                $part->body = imap_fetchbody($this->mailbox, $this->messageNmb, strval($sectionId + 1));
-                $part->filename = isset($part->disposition) && $part->disposition == 'attachment' ? $part->parameters[0]->value : 'INLINE';
+                $this->parts->$sectionId->body = imap_fetchbody($this->mailbox, $this->msgNumber, strval($sectionId + 1));
+                $this->parts->$sectionId->filename = isset($part->disposition) && $part->disposition == 'attachment' ? $part->parameters[0]->value : 'INLINE';
             }
             $this->log->debug(__METHOD__);
         }
@@ -127,30 +120,15 @@ class belegMail
         return $return;
     }
 
-    /**
-     * Methode getStructure
-     *
-     * @de precated
-     *
-     *
-     * public function getStructure(): object
-     * {
-     *
-     * if (empty($this->structure))
-     * {
-     * $this->structure = imap_fetchstructure($this->mailbox, $this->messageNmb);
-     * $this->log->debug(__METHOD__, $this->getStructure());
-     * }
-     * return $this->structure;
-     * }*/
 
-    public function getSubject(): string
+    public function &getSubject(): string
     {
         $this->log->debug(__METHOD__, $this->getHeader()->subject);
         return $this->getHeader()->subject;
     }
 
-    public function getAttachments($subtype): object
+    /*
+    public function &getAttachments($subtype): object
     {
         if (empty($this->attachments))
         {
@@ -186,6 +164,7 @@ class belegMail
         }
         return $this->attachments;
     }
+    */
 
     public function getBodyAsText(): string
     {
@@ -214,25 +193,21 @@ class belegMail
         return $this->getHeader()->from[array_key_first($this->getHeader()->from)]->host;
     }
 
-    public function getFrom(): string
+    public function &getFrom(): string
     {
         return $this->getHeader()->fromaddress;
     }
 
-    public function getTo(): string
+    public function &getTo(): string
     {
         return $this->getHeader()->toaddress;
     }
 
-    public function getTimestamp(): int
+    public function &getTimestamp(): int
     {
         return $this->getHeader()->udate;
     }
 
-    public function getDateAsYMDString(): string
-    {
-        return date("Y-m-d", $this->getTimestamp());
-    }
 
     public function getDateAsY(): string
     {
@@ -246,17 +221,17 @@ class belegMail
         imap_expunge($this->mailbox);
     }
 
-    public function addDownloadFile(string $filename, string $filepath)
+    public function addDownloadFile(string $fileName, string $fileUrl)
     {
         if (empty($this->downloadFiles))
         {
             $this->downloadFiles = (object) array();
         }
-        $this->downloadFiles->$filename = $filepath;
+        $this->downloadFiles->$fileUrl = $fileName;
         return $this;
     }
 
-    public function getDownloadFiles()
+    public function &getDownloadFiles()
     {
         if (empty($this->downloadFiles))
         {
