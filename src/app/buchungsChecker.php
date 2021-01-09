@@ -1,6 +1,10 @@
 <?php
 
-namespace DOEBELING\BuhaBelegChecker;
+declare(strict_types=1);
+
+namespace DOEBELING\buhaJournal;
+error_reporting(E_ALL);
+
 setlocale (LC_ALL, 'de_DE@euro', 'de_DE', 'de', 'ge');
 
 //PHP7.2
@@ -21,7 +25,7 @@ if (!function_exists('array_key_first'))
  * @link        https://github.com/ADoebeling/Buha-Beleg-Checker
  * @license     CC-BY-SA <https://creativecommons.org/licenses/by-sa/3.0/de/>
  */
-class Checker
+class buchungsChecker
 {
     /**
      * RegEx für Belege im Format: "#12345_1 - df - Rechnung RG 456465.pdf"

@@ -26,9 +26,9 @@ Es verarbeitet einen Kontoauszug (CSV aus WISO Mein Geld), mein Buchungsprotokol
 <?php
 // example.php
 
-require_once 'doebeling.buhaBelegChecker.checker.class.php';
+require_once 'src/app/buchungsChecker.php';
 
-$buha2020   = new \DOEBELING\BuhaBelegChecker\Checker();
+$buha2020   = new \DOEBELING\buhaJournal\buchungsChecker();
 $buha2020   -> parseBelege('../2020/ER - Eingangsrechnungen/')
             -> parseBelege('../2020/AR - Ausgangsrechnungen/')
             -> parseKontoauszuege('../2020/KA - Kontoauszug/')
