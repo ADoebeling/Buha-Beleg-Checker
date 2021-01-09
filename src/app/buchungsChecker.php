@@ -69,12 +69,23 @@ class buchungsChecker
     /**
      * @var bool
      */
+    protected $isParseMailsActive = false;
+
+    /**
+     * @var bool
+     */
     protected $isParseKontoauszuegeActive = false;
 
     /**
      * @var bool
      */
     protected $isEigenbelegActive = false;
+
+
+    /**
+     * @var log
+     */
+    public $log;
 
     // --------------------------------------------------
     // Public API
@@ -83,17 +94,17 @@ class buchungsChecker
     /**
      * Checker constructor
      */
-    public function __construct()
+    public function __construct($log)
     {
-        $this->getTimer();
+        $this->setLog($log);
     }
 
-    /**
-     * Checker destructor
-     */
-    public function __destruct()
+    public function setLog(array $log)
     {
-        echo "{$this->getTimer()}s - EOF";
+        $this->log = new log("belegAbruf->belegMails");
+        foreach ($log as $handler)
+            $this->log->pushHandler($handler);
+        return $this;
     }
 
     /**
@@ -121,6 +132,7 @@ class buchungsChecker
      */
     public function parseKontoauszuege($dirKontoauszuege)
     {
+        $this->log->debug(__METHOD__, func_get_args());
         $this->isParseKontoauszuegeActive = true;
         $files = self::getDirRecursivelyAsArray($dirKontoauszuege, '/.*\.csv/i');
         foreach ($files as $filepath => $filename)
@@ -152,6 +164,7 @@ class buchungsChecker
      */
     public function parseBelege($dirBelege)
     {
+        $this->log->debug(__METHOD__, func_get_args());
         $this->isParseBelegeActive = true;
         $files = self::getDirRecursivelyAsArray($dirBelege);
         foreach ($files as $path => $filename)
@@ -190,6 +203,7 @@ class buchungsChecker
      */
     public function parseBuchungen($dirBuchungen)
     {
+        $this->log->debug(__METHOD__, func_get_args());
         $this->isParseBuchungenActive = true;
         $files = self::getDirRecursivelyAsArray($dirBuchungen);
         foreach ($files as $filepath => $file)
@@ -244,6 +258,42 @@ class buchungsChecker
         return $this;
     }
 
+
+    /*
+     *
+     * @param $dirBuchungen
+     * @return $this
+     */
+    public function parseMails($dirMails)
+    {
+        $this->log->debug(__METHOD__, func_get_args());
+        $this->isParseMailsActive = true;
+        $files = self::getDirRecursivelyAsArray($dirMails);
+        foreach ($files as $filePath => $fileName)
+        {
+            if (preg_match("/.*\.md/", $fileName) === 0)
+                continue;
+            $content = file_get_contents($filePath);
+            $md = explode("\n", $content)[2];
+
+            preg_match(self::regExBelege, $fileName, $matches);
+            if (isset($matches['id']) && $matches['id'] != '')
+            {
+                $belegId = $matches['id'];
+            }
+            else
+            {
+                $belegId = explode('__', $fileName);
+                $belegId = "Mail {$belegId[1]}";
+                $this->b[$belegId]['hinweis']['mailOhneBelegnummer'] = true;
+            }
+            $this->b[$belegId]['mailMd'] = $md;
+        }
+
+        ksort($this->b);
+        return $this;
+    }
+
     // --------------------------------------------------
     // Interne Funktionen
     // --------------------------------------------------
@@ -255,6 +305,7 @@ class buchungsChecker
      */
     protected function generateMd()
     {
+        $this->log->debug(__METHOD__, func_get_args());
         foreach ($this->b as $bid => &$b)
         {
             $b['md'] = '';
@@ -367,7 +418,13 @@ class buchungsChecker
             }
             else
             {
-                $b['md'] .= "| Buchungssatz: | **FEHLT**  | **FEHLER**:<br>Keine Buchungssätze gefunden |\n";
+                $b['md'] .= "| Buchungssatz: | **FEHLT**<br>Keine Buchungssätze gefunden |  |\n";
+            }
+
+            // Mail
+            if (isset($b['mailMd']))
+            {
+                $b['md'] .= $b['mailMd'];
             }
 
             // Notiz
@@ -400,11 +457,11 @@ class buchungsChecker
                         {
                             $belege .= self::getMdLink($filename, "$filepath") . "<br>";
                         }
-                        $b['md'] .= "| Beleg: | **FEHLT**<br>Keine Rechnungen gefunden, Vorlage für Eigenbeleg erstellt | $belege |\n";
+                        $b['md'] .= "| Beleg: | **FEHLT**<br>Keine Belege gefunden, Vorlage für Eigenbeleg erstellt | $belege |\n";
                     }
                     else
                     {
-                        $b['md'] .= "| Beleg: | **FEHLT**<br>Keine Rechnungen gefunde |  |\n";
+                        $b['md'] .= "| Beleg: | **FEHLT**<br>Keine Belege gefunde |  |\n";
                     }
                 }
             }
@@ -421,6 +478,7 @@ class buchungsChecker
      */
     public function writeMdReport($fileMdReport, $filter = '')
     {
+        $this->log->debug(__METHOD__, func_get_args());
         $this->generateMd();
         $md = '';
 
@@ -522,6 +580,7 @@ class buchungsChecker
      */
     public function deleteMdReportEigenbeleg($dirMdReportPath)
     {
+        $this->log->debug(__METHOD__, func_get_args());
         //array_map('var_dump', glob("$dirMdReportPath/*.md"));
         array_map('unlink', glob("$dirMdReportPath/*.md"));
         return $this;
@@ -529,6 +588,7 @@ class buchungsChecker
 
     public function writeMdReportEigenbeleg($dirMdReportPath, $deleteOldFiles = true)
     {
+        $this->log->debug(__METHOD__, func_get_args());
         $this->isEigenbelegActive = true;
         $this->isEigenbelegActive = true;
         if ($deleteOldFiles)
