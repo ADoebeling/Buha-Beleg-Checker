@@ -65,3 +65,36 @@ function getStringAsFilename($string)
     $string = mb_ereg_replace("([\.]{2,})", '', $string);
     return $string;
 }
+
+
+function getStringAsMd($string)
+{
+    $string = str_replace('|', '/', $string);
+    return $string;
+}
+
+
+/**
+ * @param        $text
+ * @param        $link
+ * @param string $alt
+ * @return string
+ */
+function getMdLink($text, $link, $alt = "")
+{
+    $text = trim($text);
+    if (empty($alt))
+    {
+        $alt = explode('/', rawurldecode(stripslashes(trim($link))));
+        $alt = 'Öffne ' . $alt[count($alt) - 1];
+    }
+    if (strstr($link, '/'))
+    {
+        $link = str_replace('%2F', '/', rawurlencode(stripslashes(trim($link))));
+    }
+    else
+    {
+        $link = str_replace('%23', '#', (str_replace('%2F', '/', rawurlencode(stripslashes(trim($link))))));
+    }
+    return "[`$text`]($link \"$alt\")";
+}

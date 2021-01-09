@@ -2,6 +2,9 @@
 
 namespace DOEBELING\buhaJournal;
 
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+
 require_once 'belegMail.class.php';
 
 /**
@@ -27,26 +30,42 @@ class belegMails
      */
     protected $belegMail;
 
-    public function __construct(string $sslHostname, int $sslPort, string $user, string $pwd)
+    /**
+     * @var Logger
+     */
+    public $log;
+
+    public function __construct(string $sslHostname, int $sslPort, string $user, string $pwd, array $log)
     {
-        $this->setMailbox($sslHostname, $sslPort, $user, $pwd);
-        $this->setBelegMail();
+        $this->setLog($log);
+        $this->log->debug(__METHOD__, [$sslHostname, $sslPort, $user]);
+        $this->setMailbox($sslHostname, $sslPort, $user, $pwd, $log);
+        $this->setBelegMail($log);
+    }
+
+    public function setLog(array $log)
+    {
+        $this->log = new log("belegAbruf->belegMails");
+        foreach ($log as $handler) $this->log->pushHandler($handler);
+        return $this;
     }
 
     protected function setMailbox(string $sslHostname, int $sslPort, string $user, string $pwd)
     {
+        $this->log->debug(__METHOD__, [$sslHostname, $sslPort, $user]);
         $server = "{{$sslHostname}:{$sslPort}/imap/ssl}INBOX";
         $this->mailbox = imap_open($server, $user, $pwd);
         return $this;
     }
 
-    protected function setBelegMail()
+    protected function setBelegMail(array $log)
     {
+        $this->log->debug(__METHOD__, func_get_args());
         $this->belegMail = (object) array();
 
         for ($i = imap_num_msg($this->mailbox); $i > 0; $i--)
         {
-            $bm = new belegMail($this->mailbox, $i);
+            $bm = new belegMail($this->mailbox, $i, $log);
             $this->belegMail->{$bm->getUid()} = $bm;
         }
         return $this;
@@ -54,21 +73,26 @@ class belegMails
 
     public function getByUid($uid): belegMail
     {
+        $this->log->debug(__METHOD__, func_get_args());
         return $this->belegMail->$uid;
     }
 
     public function getAll(): \stdClass
     {
+        $this->log->debug(__METHOD__, func_get_args());
         return $this->belegMail;
     }
 
     public function hasMails(): bool
     {
-        return (count(get_object_vars($this->getAll())) > 0);
+        $this->log->debug(__METHOD__, func_get_args());
+        $count = count(get_object_vars($this->getAll()));
+        return ($count > 0);
     }
 
     public function __destruct()
     {
+        $this->log->debug(__METHOD__, func_get_args());
         imap_close($this->mailbox);
     }
 }
