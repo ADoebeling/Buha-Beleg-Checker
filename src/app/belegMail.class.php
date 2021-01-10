@@ -95,6 +95,7 @@ class belegMail
     {
         if (empty($this->parts))
         {
+            $this->parts = new \stdClass();
             $this->parts = (object) imap_fetchstructure($this->mailbox, $this->msgNumber)->parts;
             foreach ($this->parts as $sectionId => $part)
             {

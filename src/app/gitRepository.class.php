@@ -34,11 +34,17 @@ class gitRepository extends \Cz\Git\GitRepository
         return $this;
     }
 
-    public function __call($name, $arguments)
+    public function run($cmd)
+    {
+        $this->log->debug("CMD: $cmd", __METHOD__);
+        return parent::run($cmd);
+    }
+
+    /*public function __call($name, $arguments)
     {
         $this->log->debug(__CLASS__."::$name", $arguments);
         return parent::{$name}($arguments);
-    }
+    }*/
 
     public function __destruct()
     {

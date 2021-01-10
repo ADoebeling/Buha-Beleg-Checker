@@ -1,9 +1,7 @@
 <?php
 
 namespace DOEBELING\buhaJournal;
-
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use stdClass;
 
 require_once 'belegMail.class.php';
 
@@ -31,7 +29,7 @@ class belegMails
     protected $belegMail;
 
     /**
-     * @var Logger
+     * @var log
      */
     public $log;
 
@@ -77,7 +75,7 @@ class belegMails
         return $this->belegMail->$uid;
     }
 
-    public function getAll(): \stdClass
+    public function getAll(): stdClass
     {
         $this->log->debug(__METHOD__, func_get_args());
         return $this->belegMail;
@@ -94,5 +92,6 @@ class belegMails
     {
         $this->log->debug(__METHOD__, func_get_args());
         imap_close($this->mailbox);
+        return $this;
     }
 }

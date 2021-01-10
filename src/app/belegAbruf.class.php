@@ -3,9 +3,6 @@
 declare(strict_types=1);
 
 namespace DOEBELING\buhaJournal;
-
-use Monolog\Handler\StreamHandler;
-
 error_reporting(E_ALL);
 
 require_once 'phpFunctionExtensions.php';
@@ -52,26 +49,25 @@ class belegAbruf
 
     public function downloadMailsAsEml($dir)
     {
-        foreach ($this->belegMails->getAll() as &$m)
+        foreach ($this->belegMails->getAll() as $belegMail)
         {
-            /** @var $m belegMail */
+            /** @var $belegMail belegMail */
 
             // Dir
-            $dir = sprintf($dir, $m->getDateAsY());
+            $dir = sprintf($dir, $belegMail->getDateAsY());
             if (!file_exists($dir))
             {
                 mkdir($dir, 0770, true);
             }
 
             // Filename
-            $fileName = $m->getFilePrefix()->filePrefix . getStringAsFilename($m->getSubject()).'.eml';
-            file_put_contents($dir.$fileName, $m->getEml());
-            $m->addDownloadFile($fileName, $dir.$fileName);
+            $fileName = $belegMail->getFilePrefix()->filePrefix . getStringAsFilename($belegMail->getSubject()) . '.eml';
+            file_put_contents($dir . $fileName, $belegMail->getEml());
+            $belegMail->addDownloadFile($fileName, $dir . $fileName);
             $this->log->info("Download $fileName", [__METHOD__]);
         }
         return $this;
     }
-
 
 
     public function downloadMailAttachments($dir): belegAbruf
@@ -89,10 +85,11 @@ class belegAbruf
                         mkdir($dir, 0770, true);
 
                     // Filename
-                    $file = $belegMail->getFilePrefix()->filePrefix . getStringAsFilename($part->filename);
+                    $fileName = $belegMail->getFilePrefix()->filePrefix . getStringAsFilename($part->filename);
 
-                    file_put_contents($dir.$file, base64_decode($part->body));
-                    $this->log->info("Download $file", [__METHOD__]);
+                    file_put_contents($dir . $fileName, base64_decode($part->body));
+                    $belegMail->addDownloadFile($fileName, $dir . $fileName);
+                    $this->log->info("Download $fileName", [__METHOD__]);
                 }
             }
         }
@@ -110,7 +107,6 @@ class belegAbruf
         foreach ($this->belegMails->getAll() as $belegMail)
         {
             /** @var belegMail $belegMail */
-            $belegMail;
 
             $metaText = '`' . getStringAsMd($belegMail->getFrom()) . '` *an* <br>';
             $metaText .= '`' . getStringAsMd($belegMail->getTo()) . '` <br><br>';
@@ -129,7 +125,6 @@ class belegAbruf
             $body .= $belegMail->getBodyAsText();
 
 
-
             // Dir
             $dir = sprintf($dir, $belegMail->getDateAsY());
             if (!file_exists($dir))
@@ -138,7 +133,7 @@ class belegAbruf
             // Filename
             $file = $belegMail->getFilePrefix()->filePrefix . getStringAsFilename($belegMail->getSubject()) . '.md';
 
-            file_put_contents($dir.$file, $body);
+            file_put_contents($dir . $file, $body);
             $this->log->info("Download $file", __METHOD__);
         }
         return $this;
