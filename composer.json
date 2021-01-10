@@ -1,5 +1,8 @@
 {
-    "require": {
-        "czproject/git-php": "^3.18"
-    }
+  "require": {
+    "czproject/git-php": "^3.18",
+    "ext-imap": "*"
+  }
 }
+
+
