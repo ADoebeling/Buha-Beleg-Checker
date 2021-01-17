@@ -41,6 +41,11 @@ class buchungsElement
     protected $mdTable;
 
     /**
+     * @var log
+     */
+    protected $log;
+
+    /**
      * buchungsElement constructor.
      *
      * Nimmt RAW-Daten eines Buchungs-Elements entgegen und bereitet sie auf
@@ -50,6 +55,7 @@ class buchungsElement
     public final function __construct($raw)
     {
         $this->mdTable = new mdTable();
+        $this->log = new log(get_class($this));
         $this->setRaw($raw);
         $this->parse();
     }
@@ -141,6 +147,7 @@ class buchungsElement
         {
             foreach (self::getFilesAsCsvArray($input['csvDir'], $input['csvFelder']) as $file)
             {
+                //$this->log->debug("Lade CSV-File $file");
                 foreach ($file as $raw)
                 {
                     $journal->add(new $input['class']($raw));
@@ -203,9 +210,9 @@ class buchungsElement
      */
     public static function getFilesAsCsvArray($dir, $felder, $delimeter = ';', $eol = PHP_EOL)
     {
+        $r = array();
         foreach (self::getFilesAsArray($dir) as $file => $fileName)
         {
-            $r = array();
             $f = file_get_contents($file);
             $f = str_replace("﻿", '', $f); //ZWNBSP - geschütztes Leerzeichen
             $f = explode($eol, $f);
@@ -225,6 +232,7 @@ class buchungsElement
                 }
             }
         }
+        //print_r($r);
         return $r;
     }
 
