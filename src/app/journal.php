@@ -2,8 +2,18 @@
 
 namespace DOEBELING\BuHaJournal;
 
-use DOEBELING\BuHaJournal\buchungen\buchung;
-use DOEBELING\BuHaJournal\buchungen\buchung\buchungsElement;
+require_once 'vendor/autoload.php';
+require_once 'buchungsElement.php';
+require_once 'buchung.php';
+require_once 'buchungsbeleg.php';
+require_once 'buchungssatz.php';
+require_once 'exception.php';
+require_once 'kontoauszug.php';
+require_once 'log.php';
+require_once 'mail.php';
+require_once 'mdTable.php';
+require_once 'mdTableRow.php';
+require_once 'pdf.php';
 
 
 /**
@@ -38,7 +48,7 @@ class journal
     protected $buchungenFiltered = false;
 
     /**
-     * @var object Log
+     * @var object log
      */
     protected $log;
 
@@ -53,7 +63,7 @@ class journal
         {
             $this->add($element);
         }
-        // TODO: Monolog initialisieren
+        $this->log = new log(get_class($this));
     }
 
     /**
@@ -62,7 +72,7 @@ class journal
      * Nimmt ein Objekt vom Typ buchung entgegen und fügt es hinzu.
      * Nimmt ein Objekt vom Typ buchungen entgegen und integriert sie
      *
-     * @param array|parser|journal|buchung|buchungsElement $object
+     * @param array|journal|buchung|buchungsElement $object
      * @return journal
      * @throws exception
      */
@@ -70,25 +80,31 @@ class journal
     {
         if (is_array($object))
         {
+            $this->log->debug("add(array)");
             foreach ($object as $arrayElement)
             {
                 $this->add(($arrayElement));
             }
         }
-        else if ($object instanceof parser)
-        {
-            /** @var parser $object */
-            $this->add($object->get());
-        }
         else if ($object instanceof journal)
         {
+            $this->log->debug("add(journal)");
             /** @var journal $object */
             $this->add($object->get());
         }
         else if ($object instanceof buchung)
         {
             /** @var buchung $object */
-            $this->add($object->get()):
+            if (isset($this->buchungen[$object->getNr()]))
+            {
+                $this->log->debug("add(buchung)");
+                $this->add($object->get());
+            }
+            else
+            {
+                $this->log->debug("add(buchung via element)");
+                $this->buchungen[$object->getNr()] = $object;
+            }
         }
         else if ($object instanceof buchungsElement)
         {
@@ -96,19 +112,21 @@ class journal
             {
                 if (isset($this->buchungen[$object->getNr()]))
                 {
+                    $this->log->debug("add(buchungselement zu bestehender Buchung)");
                     $this->buchungen[$object->getNr()]->add($object);
                 }
                 else
                 {
+                    $this->log->debug("add(Buchungselement als neue Buchung)");
                     $this->buchungen[$object->getNr()] = new buchung($object);
                 }
             }
             else
             {
+                $this->log->debug("add(Buchungselement als neue Buchung ohne Buchungsnummer)");
                 $this->buchungenOhneNr[] = new buchung($object);
             }
         }
-
         else
         {
             throw new exception("Übergebenes Element ist ungültig");
@@ -122,7 +140,7 @@ class journal
      * Gibt eine Buchung oder ein Array aller Buchungen aus
      * Eine einzelne Buchung wird immer ausgegeben
      *
-     * @param     int|bool $buchungsNr
+     * @param int|bool $buchungsNr
      * @return    false|buchung|array
      * @throws    \DOEBELING\BuHaJournal\exception
      * @author    Andreas Döbeling <opensource@doebeling.de>
@@ -134,13 +152,14 @@ class journal
     public function get($buchungsNr = false)
     {
         $buchungen = $this->buchungenFiltered === false ? $this->buchungen : $this->buchungenFiltered;
-        $buchungen = ksort($buchungen);
+        ksort($buchungen);
 
-        if ($buchungen === false)
+        /*if (empty($buchungen))
         {
             throw new exception("Buchungen ist leer");
         }
-        else if ($buchungsNr === false)
+        else*/
+        if ($buchungsNr === false)
         {
             return $buchungen;
         }
@@ -154,6 +173,7 @@ class journal
         }
     }
 
+
     /**
      * Methode getMd
      *
@@ -162,12 +182,15 @@ class journal
      * @return    string
      * @throws    \Exception
      */
-    public function getMd() : string
+    public function getMdTable(): mdTable
     {
-        $md = '';
-        foreach ($this->get() as &$buchung)
+        $md = new mdTable();
+        $md->setTitle('BelegNr.', 'Vorgang', 'Beschreibung', 'Quelle / Link');
+
+        /** @var buchung $buchung */
+        foreach ($this->get() as $buchung)
         {
-            $md .= $buchung->getMd();
+            $md->add($buchung->getMdTable());
         }
         return $md;
     }
@@ -180,7 +203,7 @@ class journal
      *
      * @return $this
      */
-    public function addfilter() : journal
+    public function addfilter(): journal
     {
         if (empty($this->buchungenFiltered))
         {
@@ -191,6 +214,19 @@ class journal
         }
         // TODO
         return $this;
+    }
+
+    public function debug()
+    {
+        return;
+        echo "Journal debug()\n";
+        print_r($this->buchungen);
+        echo "\n \n";
+    }
+
+    public function __destruct()
+    {
+        //print_r($this->buchungen);
     }
 }
 

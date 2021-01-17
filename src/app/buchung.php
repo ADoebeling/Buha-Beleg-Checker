@@ -1,9 +1,6 @@
 <?php
 
-namespace DOEBELING\BuHaJournal\buchungen;
-
-use DOEBELING\BuHaJournal\buchungen\buchung\buchungsElement;
-use phpDocumentor\GraphViz\Exception;
+namespace DOEBELING\BuHaJournal;
 
 /**
  * Class buchung
@@ -30,13 +27,19 @@ class buchung
     protected $nrAlt = false;
 
     /**
-     * @var bool|array Array aller Elemente
+     * @var array Array aller Buchungen
      */
-    protected $elements = false;
+    protected $elements = [];
 
     public function getNr()
     {
         return $this->nr;
+    }
+
+    public function getDate()
+    {
+        // TODO Implement
+        return '01.02.2013';
     }
 
     /**
@@ -51,39 +54,37 @@ class buchung
         return $this->elements;
     }
 
+
+
    public function __construct(buchungsElement $buchungsElement) {
         $this->add($buchungsElement);
    }
 
 
-    public function add(buchungsElement $buchungsElement) : buchung
+    public function add(buchungsElement $buchungsElement) : self
     {
-
+        $this->elements[] = $buchungsElement;
+        return $this;
     }
 
     /**
-     * Methode getMd
+     * Methode getMdTable
      *
-     * Gibt das Markdown aller Elemente aus
+     * Gibt eine Buchung als MD zurück
      *
-     * @return string
-     * @throws Exception
+     * @return mdTable
      */
-    public function getMd()
+    public final function getMdTable()
     {
-        if ($this->elements === false)
+        $md = new mdTable();
+        // Buchungselemente
+        /** @var buchungsElement $element */
+        foreach ($this->elements as $element)
         {
-            throw new Exception("Diese Buchung enhält keine Elemente");
+            $md->add($element->getMdTable());
         }
-        else
-        {
-            $md = '';
-            foreach ($this->elements as $element)
-            {
-                $md .= $element->getMd();
-            }
-            return $md;
-        }
+
+        return $md;
     }
 
 

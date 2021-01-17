@@ -1,11 +1,12 @@
 <?php
 
-namespace DOEBELING\BuHaJournal\buchungen\buchung;
+namespace DOEBELING\BuHaJournal;
 
 /**
- * Class buchungsElementMails
+ * Class buchungsElementBuchungsbeleg
  *
- * Stell Buchungsdaten aus E-Mails bereit
+ * Stell Link zu einem Buchungsbeleg bereit
+ * Erstellt einen Buchungsbeleg
  *
  * @package   DOEBELING\BuHaJournal\buchungen\buchung
  * @author    Andreas Döbeling <opensource@doebeling.de>
@@ -15,7 +16,7 @@ namespace DOEBELING\BuHaJournal\buchungen\buchung;
  * @license   CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0/>
  *
  */
-class buchungsElementMails implements buchungsElement
+class buchungsbeleg extends buchungsElement
 {
 
 }

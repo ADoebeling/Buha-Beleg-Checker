@@ -1,12 +1,11 @@
 <?php
 
-namespace DOEBELING\BuHaJournal\buchungen\buchung;
+namespace DOEBELING\BuHaJournal;
 
 /**
- * Class buchungsElementBuchungsbeleg
+ * Class pdf
  *
- * Stell Link zu einem Buchungsbeleg bereit
- * Erstellt einen Buchungsbeleg
+ * Stell Buchungsdaten aus abgelegten PDFs bereit
  *
  * @package   DOEBELING\BuHaJournal\buchungen\buchung
  * @author    Andreas Döbeling <opensource@doebeling.de>
@@ -16,7 +15,10 @@ namespace DOEBELING\BuHaJournal\buchungen\buchung;
  * @license   CC BY-SA 4.0 <https://creativecommons.org/licenses/by-sa/4.0/>
  *
  */
-class buchungsElementBuchungsbeleg implements buchungsElement
+class pdf extends buchungsElement
 {
-
+    public function getMd(): string
+    {
+        // TODO: Implement getMd() method.
+    }
 }

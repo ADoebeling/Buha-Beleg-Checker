@@ -1,8 +1,13 @@
 <?php
 
-namespace DOEBELING;
-use DOEBELING\BuHaJournal\parser\parseKontoauszug;
+namespace DOEBELING\BuHaJournal;
 
-$journal = new \DOEBELING\BuHaJournal\journal();
-$journal->add(new parseKontoauszug('../sfsdf'));
+require_once './src/app/journal.php';
 
+
+$journal = new journal();
+
+$journal->add(kontoauszug::load(['csvDir' => '../2020/KA - Kontoauszug/']));
+$journal->debug();
+
+echo $journal->getMdTable()->getMd();
