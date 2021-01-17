@@ -213,12 +213,13 @@ class buchungsElement
         $r = array();
         foreach (self::getFilesAsArray($dir) as $file => $fileName)
         {
-            $f = file_get_contents($file);
+            $f = trim(file_get_contents($file));
             $f = str_replace("﻿", '', $f); //ZWNBSP - geschütztes Leerzeichen
             $f = explode($eol, $f);
             $h = str_getcsv(array_shift($f), $delimeter);
             foreach ($f as $row => $line)
             {
+                if (empty(trim($line))) continue;
                 foreach (str_getcsv($line, $delimeter) as $k => $v)
                 {
                     if (isset($felder[$h[$k]]))
@@ -228,6 +229,7 @@ class buchungsElement
                     }
                         $r[$file] [$row] -> {$felder[$h[$k]]} = $v;
                         $r[$file] [$row] -> file = $file;
+                        $r[$file] [$row] -> fileName = $fileName;
                     }
                 }
             }

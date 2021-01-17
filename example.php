@@ -10,4 +10,4 @@ $journal = new journal();
 $journal->add(kontoauszug::load(['csvDir' => '../2020/KA - Kontoauszug/']));
 $journal->debug();
 
-echo $journal->getMdTable()->getMd();
+file_put_contents(".test.md", $journal->getMdTable()->getMd());

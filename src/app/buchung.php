@@ -17,11 +17,6 @@ namespace DOEBELING\BuHaJournal;
 class buchung
 {
     /**
-     * @var bool|int BuchungsNr
-     */
-    protected $nr = false;
-
-    /**
      * @var array Alternative Buchungsbezeichnung
      */
     protected $nrAlt = false;
@@ -33,7 +28,15 @@ class buchung
 
     public function getNr()
     {
-        return $this->nr;
+        /** @var buchungsElement $buchungsElement */
+        foreach ($this->get() as $buchungsElement)
+        {
+            if (!empty($buchungsElement->getNr()))
+            {
+                return $buchungsElement->getNr();
+            }
+        }
+        return 'fehlt';
     }
 
     public function getDate()
@@ -77,12 +80,21 @@ class buchung
     public final function getMdTable()
     {
         $md = new mdTable();
+
+        //Headline
+        $headline = new mdTableRow();
+        $headline->setNr("**#{$this->getNr()}**");
+        $md->add($headline);
+
         // Buchungselemente
         /** @var buchungsElement $element */
         foreach ($this->elements as $element)
         {
             $md->add($element->getMdTable());
         }
+
+        //Leerzeile
+        $md->add(new mdTableRow());
 
         return $md;
     }
