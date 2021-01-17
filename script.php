@@ -9,8 +9,8 @@
  * @license     CC-BY-SA <https://creativecommons.org/licenses/by-sa/3.0/de/>
  */
 
-require_once './src/app/belegAbruf.class.php';
-require_once './src/app/buchungsChecker.php';
+require_once './src/app_deprecated/belegAbruf.class.php';
+require_once './src/app_deprecated/buchungsChecker.php';
 require_once './vendor/autoload.php';
 
 // Execute Script
