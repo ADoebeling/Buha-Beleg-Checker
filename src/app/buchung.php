@@ -81,9 +81,21 @@ class buchung
     {
         $md = new mdTable();
 
+        // Github Smileys
+        $nrInSmileys = strval($this->getNr());
+        if (strlen($this->getNr()) <= 6)
+        {
+            $zahlen = [0,1,2,3,4,5,6,7,8,9];
+            $smileys = [':zero:', ':one:', ':two:', ':three:', ':four:', ':five:', ':six:', ':seven:', ':eight:', ':nine:'];
+            $nrInSmileys = str_replace($zahlen, $smileys, $nrInSmileys);
+            $nrInSmileys = ':hash:'.$nrInSmileys;
+        }
+
+
         //Headline
         $headline = new mdTableRow();
-        $headline->setNr("**#{$this->getNr()}**");
+        $headline->setText("**#{$this->getNr()}**");
+        $headline->setNr($nrInSmileys);
         $md->add($headline);
 
         // Buchungselemente

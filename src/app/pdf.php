@@ -34,7 +34,7 @@ class pdf extends buchungsElement
     protected function parseRawToMd()
     {
         $row = new mdTableRow();
-        $row->setTitle("Beleg");
+        $row->setTitle(":page_facing_up: Beleg");
         $row->setText("{$this->raw->fileName}");
         //$row->setLink("{$this->raw->fileName}");
         $this->mdTable->add($row);

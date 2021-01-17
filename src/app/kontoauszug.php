@@ -60,39 +60,39 @@ class kontoauszug extends buchungsElement
     protected function parseRawToMd()
     {
         $row = new mdTableRow();
-        $row->setTitle("Überweisungsdatum");
-        $row->setText("{$this->raw->datum}");
-        $row->setLink("{$this->raw->fileName}");
-        $this->mdTable->add($row);
-
-        $row = new mdTableRow();
         $an = empty($this->raw->an) ? 'Unbekannt' : $this->raw->an;
         $von = empty($this->raw->von) ? 'Unbekannt' : $this->raw->von;
-        $row->setTitle("Überweisung");
-        $row->setText("$von *an*<br>$an");
-        $row->setLink("{$this->raw->fileName}");
+        $row->setTitle("**Kontobewegung**");
+        $row->setText("`$von` *an*<br>:money_with_wings: `$an`");
+        $row->setLink("`{$this->raw->fileName}`");
         $this->mdTable->add($row);
 
         $row = new mdTableRow();
-        $row->setTitle("Überweisungsbetrag");
-        $row->setText($this->raw->betrag);
-        $row->setLink("{$this->raw->fileName}");
+        $row->setTitle("&nbsp; &nbsp;Üb.-Datum");
+        $row->setText(":date: `{$this->raw->datum}`");
+        //$row->setLink("{$this->raw->fileName}");
+        $this->mdTable->add($row);
+
+        $row = new mdTableRow();
+        $row->setTitle("&nbsp; &nbsp;Üb.-Betrag");
+        $row->setText(":moneybag: `{$this->raw->betrag} €`");
+        //$row->setLink("{$this->raw->fileName}");
         $this->mdTable->add($row);
 
         if (!empty($this->raw->text))
         {
             $row = new mdTableRow();
-            $row->setTitle("Verwendungszweck");
+            $row->setTitle("&nbsp; &nbsp;Üb.-Zweck");
             $row->setText($this->raw->text);
-            $row->setLink("{$this->raw->fileName}");
+            //$row->setLink("{$this->raw->fileName}");
         }
 
         if (!empty($this->raw->vermerk))
         {
             $row = new mdTableRow();
-            $row->setTitle("Vermerk");
-            $row->setText($this->raw->vermerk);
-            $row->setLink("{$this->raw->fileName}");
+            $row->setTitle("&nbsp; &nbsp;Vermerk");
+            $row->setText(":writing_hand: {$this->raw->vermerk}");
+            //$row->setLink("{$this->raw->fileName}");
             $this->mdTable->add($row);
         }
 
