@@ -38,11 +38,6 @@ class kontoauszug extends buchungsElement
         return parent::load($input);
     }
 
-    protected function validateRaw()
-    {
-        return parent::validateRaw();
-    }
-
     protected function parseRawToNr()
     {
         $this->nr = isset($this->raw->id) ? $this->raw->id :'';

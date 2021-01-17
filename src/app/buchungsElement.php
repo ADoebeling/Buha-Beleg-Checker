@@ -158,8 +158,11 @@ class buchungsElement
         // Laden von PDFs
         else if (isset($input['pdfDir']))
         {
-            foreach (self::getPdfsAsArray($input['dir']) as $raw)
+            foreach (self::getPdfsAsArray($input['pdfDir']) as $file => $fileName)
             {
+                $raw = new stdClass();
+                $raw->file = $file;
+                $raw->fileName = $fileName;
                 $journal->add(new $input['class']($raw));
             }
         }
@@ -238,6 +241,19 @@ class buchungsElement
         return $r;
     }
 
+    protected static function getBuchungsNrFromString($string)
+    {
+        $regEx = '/#(\d{1,6})/';
+        if (preg_match($regEx, $string, $matches) == false)
+        {
+            return false;
+        }
+        else
+        {
+            return $matches[1];
+        }
+    }
+
 
     /**
      * Methode getPdfsAsArray
@@ -248,7 +264,6 @@ class buchungsElement
      */
     public static function getPdfsAsArray(string $dir): array
     {
-        $files = self::getFilesAsArray($dir);
-        return [$files];
+        return self::getFilesAsArray($dir);;
     }
 }
